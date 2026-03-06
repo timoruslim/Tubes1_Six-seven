@@ -86,4 +86,4 @@ Lakukan itu.
 
 ---
 
-> Dibuat sebagai bagian dari Tugas Besar 3 IF2211 Strategi Algoritma 2025 – ITB
+> Dibuat sebagai bagian dari Tugas Besar 1 IF3270 Pembelajaran Mesin 2026 – ITB

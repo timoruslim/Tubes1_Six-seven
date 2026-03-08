@@ -1,0 +1,149 @@
+from .engine import Tensor, unbroadcast
+from .activation import linear, relu, sigmoid, tanh, softmax, swish, gelu
+import numpy as np
+
+
+
+class Module:
+
+   def parameters(self):
+      return []
+
+   def zero_grad(self):
+      for p in self.parameters():
+         p.grad = np.zeros_like(p.data)
+
+
+
+class Layer(Module):
+
+   def __init__(self, n_neurons, input_size=None, activation='relu', weight_init='xavier', bias_init='zero', seed=None):
+
+      self.n_neurons = n_neurons
+      self.input_size = input_size
+      self.weight_init = weight_init
+      self.bias_init = bias_init
+      self.seed = seed
+
+      rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+      if input_size is not None:
+         self.weights = self._initialize_parameters(input_size, n_neurons, weight_init, rng)
+      else:
+         self.weights = None
+      self.bias = self._initialize_parameters(1, n_neurons, bias_init, rng)
+
+      ACTIVATIONS = {
+         'linear': linear,
+         'relu': relu,
+         'sigmoid': sigmoid,
+         'tanh': tanh,
+         'softmax': softmax,
+         'swish': swish,
+         'gelu': gelu
+      }
+      self.activation = ACTIVATIONS[activation] if activation in ACTIVATIONS else None
+      if self.activation is None:
+         raise ValueError(f"Unknown activation function: {activation}")
+
+   def _initialize_parameters(self, rows, cols, init_method, rng): 
+
+      method = init_method.get('method', init_method) if isinstance(init_method, dict) else init_method
+
+      if method == 'zero':
+         return Tensor(np.zeros((rows, cols)))
+      
+      elif method == 'uniform':
+         low = init_method.get('low', -0.1) if isinstance(init_method, dict) else -0.1
+         high = init_method.get('high', 0.1) if isinstance(init_method, dict) else 0.1
+         return Tensor(rng.uniform(low, high, (rows, cols)))
+      
+      elif method == 'normal':
+         mean = init_method.get('mean', 0) if isinstance(init_method, dict) else 0
+         var = init_method.get('var', 0.01) if isinstance(init_method, dict) else 0.01
+         if var <= 0:
+            raise ValueError("Variance must be positive for normal initialization")
+         std = var ** 0.5
+         return Tensor(rng.normal(mean, std, (rows, cols)))
+      
+      elif method == 'xavier':
+         limit = np.sqrt(6 / (rows + cols))
+         return Tensor(rng.uniform(-limit, limit, (rows, cols)))
+      
+      elif method == 'he':
+         stddev = np.sqrt(2 / rows)
+         return Tensor(rng.normal(0, stddev, (rows, cols)))
+      
+      else:
+         raise ValueError(f"Unknown initialization method: {init_method}")
+
+   def parameters(self):
+      return [self.weights, self.bias] if self.weights is not None else [self.bias]
+
+   def __call__(self, input):
+
+      if self.weights is not None:
+         Z = input @ self.weights + self.bias
+      else:
+         raise ValueError("Layer input size is not defined. ")
+      
+      if self.activation is not None:
+         return self.activation(Z)
+      else:
+         raise ValueError("Layer activation is not defined. ") 
+
+
+
+class MLP(Module):
+
+   def __init__(self, layers=None, input_size=None, seed=None):
+      
+      self.seed = seed
+      self.input_size = input_size
+      self.layers = list(layers) if layers is not None else []
+      self._cascade_inputs(self.layers, input_size)
+
+   def parameters(self):
+      params = []
+      for layer in self.layers:
+         params.extend(layer.parameters())
+      return params
+   
+   def add(self, layers):
+      layers = list(layers) if isinstance(layers, list) else [layers]
+      if len(self.layers) > 0:
+         self._push_input(self.layers[-1], layers[0])
+      self._cascade_inputs(layers, layers[0].input_size)
+      self.layers.extend(layers)
+
+   def _add_input(self, layer, input_size):
+
+      # Check layer's input_size
+      if layer.input_size is not None:
+         if layer.input_size != input_size:
+            raise ValueError(f"Input size mismatch: expected {layer.input_size}, got {input_size}")
+         # Already initialized, do nothing
+         
+      # Check MLP's input_size
+      else:
+         if input_size is None:
+            raise ValueError("Input size must be specified for the first layer")
+         rng = np.random.default_rng(layer.seed if layer.seed is not None else self.seed)
+         layer.weights = layer._initialize_parameters(input_size, layer.n_neurons, layer.weight_init, rng)
+         layer.bias = layer._initialize_parameters(1, layer.n_neurons, layer.bias_init, rng)
+         layer.input_size = input_size
+      
+   def _push_input(self, prev_layer, layer):
+      self._add_input(layer, prev_layer.n_neurons)
+
+   def _cascade_inputs(self, layers, initial_input_size):
+      if len(layers) == 0:
+         return
+      self._add_input(layers[0], initial_input_size)
+      for i in range(1, len(layers)):
+         self._push_input(layers[i-1], layers[i])
+   
+   def __call__(self, input):
+      output = input if isinstance(input, Tensor) else Tensor(input)
+      for layer in self.layers:
+         output = layer(output)
+      return output

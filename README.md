@@ -34,7 +34,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ut arcu elementum, 
 
 ```
 
-Tubes3\_Ca-KSEP2025/
+Tubes1_Six-Seven/
 ├── data/
 ├── doc/
 └── src/
@@ -47,7 +47,7 @@ Tubes3\_Ca-KSEP2025/
 
 ### Prasyarat
 
-- Python ≥ 3.11
+- Python ≥ 3.13
 
 ### Instalasi
 
@@ -82,7 +82,7 @@ Lakukan itu.
 
 ## 🔗 Tautan
 
-- 📂 [Repository GitHub](https://github.com/timoruslim/Tubes3_Six-seven)
+- 📂 [Repository GitHub](https://github.com/timoruslim/Tubes1_Six-seven)
 
 ---
 

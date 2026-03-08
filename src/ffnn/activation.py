@@ -59,3 +59,13 @@ def gelu(h): # Gaussian Error Linear Unit: https://alaaalatif.github.io/2019-04-
       h.grad += unbroadcast(gelu_h.grad * gelu_grad, h.data.shape) 
    gelu_h._backward = _backward
    return gelu_h
+
+ACTIVATIONS = {
+   'linear': linear,
+   'relu': relu,
+   'sigmoid': sigmoid,
+   'tanh': tanh,
+   'softmax': softmax,
+   'swish': swish,
+   'gelu': gelu
+}

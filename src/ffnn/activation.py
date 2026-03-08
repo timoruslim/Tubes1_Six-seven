@@ -53,9 +53,9 @@ def gelu(h): # Gaussian Error Linear Unit: https://alaaalatif.github.io/2019-04-
    gelu_h = Tensor(h.data * phi_h, (h,))
    def _backward():
       x = h.data
-      phi_x = 0.5 * (1 + erf(x / np.sqrt(2))) 
-      Phi_x = np.exp(-x**2 / 2) / np.sqrt(2 * np.pi)
-      gelu_grad = phi_x + x * Phi_x # dL/dA = dL/dC * dC/dA = dL/dC * (Φ(A) + A * φ(A))
+      cdf_x = 0.5 * (1 + erf(x / np.sqrt(2))) 
+      pdf_x = np.exp(-x**2 / 2) / np.sqrt(2 * np.pi)
+      gelu_grad = cdf_x + x * pdf_x # dL/dA = dL/dC * dC/dA = dL/dC * (Φ(A) + A * φ(A))
       h.grad += unbroadcast(gelu_h.grad * gelu_grad, h.data.shape) 
    gelu_h._backward = _backward
    return gelu_h

@@ -1,6 +1,9 @@
 from .engine import Tensor
 from .activation import ACTIVATIONS
 from .initialize import INITIALIZATIONS
+from .optimizer import OPTIMIZER
+from .loss import LOSSES
+
 import numpy as np
 
 class Module:
@@ -106,6 +109,22 @@ class MLP(Module):
       self._add_input(layers[0], initial_input_size)
       for i in range(1, len(layers)):
          self._push_input(layers[i-1], layers[i])
+
+   def compile(self, optimizer, loss):
+      self.loss_fn = LOSSES.get(loss) if loss in LOSSES else None
+
+      method = optimizer.pop('optimizer', optimizer) if isinstance(optimizer, dict) else optimizer
+
+      if isinstance(optimizer, dict):
+         method = optimizer.get('method')
+         params = {key : value for key, value in optimizer.items() if key != 'optimizer'}
+      else:
+         method = optimizer
+         params = {}
+      
+      self.optimizer = OPTIMIZER.get(method) if method in OPTIMIZER else None
+      if self.optimizer is None:
+         raise ValueError(f"Unknown optimizer: {optimizer}")
 
    def __call__(self, input):
       output = input if isinstance(input, Tensor) else Tensor(input)

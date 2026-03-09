@@ -24,3 +24,9 @@ def cce(pred, target):
       target.grad -= unbroadcast((np.log(pred.data + 1e-15)) / target.data.shape[0] * cce_loss.grad, target.data.shape) # dL/dT = dL/dCCE * dCCE/dT = -log(P) / N
    cce_loss._backward = _backward
    return cce_loss
+
+LOSSES = {
+   'mse': mse,
+   'bce': bce,
+   'cce': cce
+}

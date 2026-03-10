@@ -3,9 +3,10 @@ import numpy as np
 
 class Optimizer:
 
-   def __init__(self, parameters, alpha=0.01):
+   def __init__(self, parameters, learning_rate=0.01, params=None):
       self.parameters = parameters
-      self.alpha = alpha
+      self.alpha = learning_rate
+      self.params = params if params is not None else {}
 
    def step(self):
       raise NotImplementedError("Optimizer step method must be implemented by subclasses")

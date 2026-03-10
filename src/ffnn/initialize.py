@@ -20,12 +20,12 @@ def normal(rows, cols, params=None, rng=None):
       raise ValueError("Variance must be positive for normal initialization")
    return Tensor(rng.normal(mean, var ** 0.5, (rows, cols)))
 
-def xavier(rows, cols, params=None, rng=None):
+def xavier(rows, cols, params=None, rng=None): # source: https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf
    rng = rng or np.random.default_rng()
    limit = np.sqrt(6 / (rows + cols))
    return Tensor(rng.uniform(-limit, limit, (rows, cols)))
 
-def he(rows, cols, params=None, rng=None):
+def he(rows, cols, params=None, rng=None): # source: https://arxiv.org/abs/1502.01852
    rng = rng or np.random.default_rng()
    stddev = np.sqrt(2 / rows)
    return Tensor(rng.normal(0, stddev, (rows, cols)))

@@ -5,6 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=white)
 ![NumPy](https://img.shields.io/badge/NumPy-2.2-4DABCF?logo=numpy&logoColor=fff)
 ![SciPy](https://img.shields.io/badge/SciPy-1.17.1-8CA1E5?logo=scipy&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-3.10-11557c?logo=python&logoColor=white)
 
 </div>
 
@@ -48,7 +49,12 @@ Tubes1_Six-Seven/
 
 ### Prasyarat
 
-- Python ≥ 3.13
+- python ≥ 3.13
+- numpy ≥ 2.2
+- scipy ≥ 1.17.1
+- matplotlib ≥ 3.10
+- tqdm ≥ 4.67.3
+- ipywidgets ≥ 8.1.8
 
 ### Instalasi
 

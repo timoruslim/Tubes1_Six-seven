@@ -101,6 +101,20 @@ class Tensor:
       power._backward = _backward
       return power
    
+   def sum(self, axis=None, keepdims=False):
+      sum = Tensor(np.sum(self.data, axis=axis, keepdims=keepdims), (self,))
+      def _backward():
+         self.grad += unbroadcast(sum.grad * np.ones_like(self.data), self.data.shape)
+      sum._backward = _backward
+      return sum
+   
+   def __abs__(self):
+      abs = Tensor(np.abs(self.data), (self,))
+      def _backward():
+         self.grad += unbroadcast(abs.grad * np.sign(self.data), self.data.shape) # dL/dA = dL/d|A| * d|A|/dA = dL/d|A| * sign(A)
+      abs._backward = _backward
+      return abs
+   
    def backward(self):
       topo = []
       visited = set()

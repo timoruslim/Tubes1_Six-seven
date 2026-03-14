@@ -9,26 +9,26 @@
 
 </div>
 
-## 📘 Deskripsi Program
+## 📘 Deskripsi
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ut arcu elementum, cursus leo in, condimentum orci. Duis viverra neque eu sem ornare, non placerat ipsum feugiat. Sed cursus sed ante nec scelerisque. Quisque quis nisi odio. In condimentum ante sed viverra feugiat. Etiam maximus, urna pretium sodales vulputate, nisi sem bibendum lorem, faucibus ultrices leo nisi sit amet neque. Pellentesque pellentesque tortor non turpis consectetur, et placerat arcu elementum. Donec sed lobortis mauris. Vivamus finibus turpis a lorem tincidunt venenatis. Curabitur ante sem, facilisis ac sapien at, laoreet volutpat lorem. Etiam vel diam ac quam porttitor luctus venenatis et magna. Etiam ac leo lectus. Donec ac varius justo. Nunc fermentum suscipit diam, ac auctor ex ultricies non. Sed feugiat tincidunt tortor, non finibus elit ullamcorper elementum. Nulla accumsan est odio, sit amet dapibus leo efficitur in.
+Di sini, kami membuat package untuk mengimplementasikan **Multi-Layer Perceptron** (MLP) atau **Feed-Forward Neural Network** (FFNN). Package secara efisien dan modular menerapkan _forward pass_, _backpropagation_, dan optimisasi bobot yang menjadi pokok mekanisme MLP. Dengan pacakage ini, pengguna dapat membangun MLP sendiri dengan sangat mudah, seperti `Scikit`, tetapi dengan arsitektur yang sangat _customizble_, seperti `Pytorch` atau `Tensor Flow`.
 
 ---
 
 ## ✨ Fitur Utama
 
-- 🔍 **Pertama**
-   - a
-   - b
-- 🧠 **Kedua**
-   - c
-- 📊 **Ketiga**
-   - d
-- 📄 **Keempat**
-   - e
-   - f
-- 🔐 **Kelima**
-   - g
+- 📐 **Automatic Differentiation**
+   - Kelas `Tensor` yang bisa menyimpan data dan gradien.
+   - Pembentukan graf komputasi berisi `Tensor` untuk memudahkan _forward pass_ dan _backpropagation_.
+- 🧩 **Customizble Layer**
+   - Spesifikasi jumlah neuron, jenis aktivasi, inisialisasi bobot, dan regularisasi.
+   - Implementasi RMSNorm.
+- 🎯 **Efficient Fitting**
+   - Spesifikasi _learning rate_, fungsi loss, dan metode optimisasi.
+   - Implementasi Adam Optimizer.
+- 🔍 **Model Transparency**
+   - Pencatatan rinci nilai dan gradien bobot tiap layer.
+   - Memungkinkan visualisasi, penyimpanan, dan pemuatan bobot.
 
 ---
 
@@ -38,8 +38,20 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ut arcu elementum, 
 
 Tubes1_Six-Seven/
 ├── data/
+│   └── datasetml_2026.csv
 ├── doc/
-└── src/
+│   └── Tubes1_K1_Six-seven.pdf
+├── src/
+│   ├── ffnn/
+│   │   ├── activation.py
+│   │   ├── engine.py
+│   │   ├── initialize.py
+│   │   ├── loss.py
+│   │   ├── model.py
+│   │   ├── nn.py
+│   │   └── optimizer.py
+│   └── pengujian.ipynb
+└── README.md
 
 ```
 
@@ -55,18 +67,32 @@ Tubes1_Six-Seven/
 - matplotlib ≥ 3.10
 - tqdm ≥ 4.67.3
 - ipywidgets ≥ 8.1.8
+- ipykernel (untuk notebook)
 
 ### Instalasi
 
-```bash
-# Clone repo
-git clone https://github.com/timoruslim/Tubes1_Six-Seven.git
-cd Tubes1_Six-Seven
-```
+1. Clone repository.
+
+   ```bash
+   git clone https://github.com/timoruslim/Tubes1_Six-Seven.git
+   cd Tubes1_Six-Seven
+   ```
+
+2. Pasang dependensi.
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+   Jika file `requirements.txt` belum ada, bisa instal manual.
+
+   ```
+   pip install numpy scipy matplotlib tqdm ipywidgets jupyter
+   ```
 
 ---
 
-## 🚀 Menjalankan Program
+## 🚀 Menggunakan Package
 
 ### 1. Pertama
 

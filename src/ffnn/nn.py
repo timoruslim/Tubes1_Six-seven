@@ -1,4 +1,4 @@
-from .engine import Tensor
+from .engine import Tensor, no_grad
 from .activation import ACTIVATIONS
 from .initialize import INITIALIZATIONS
 from .optimizer import OPTIMIZER
@@ -78,6 +78,25 @@ class Layer(Module):
          return self.activation(Z)
       else:
          raise ValueError("Layer activation is not defined. ") 
+      
+class RMSNorm(Module):
+   def __init__(self, size, eps=1e-8):
+      self.eps = eps
+      self.input_size = size 
+      self.n_neurons = size
+      self.gamma = Tensor(np.ones((1, size))) 
+
+   def parameters(self):
+      return [self.gamma]
+   
+   def regularization_loss(self):
+      return Tensor(0.0) 
+
+   def __call__(self, x):
+      n = x.data.shape[-1]
+      RMS = ((x ** 2).sum(axis=-1, keepdims=True) / n + self.eps) ** 0.5  
+      x_bar = (x / RMS) * self.gamma 
+      return x_bar
 
 class MLP(Module):
 
@@ -105,16 +124,18 @@ class MLP(Module):
 
    def _add_input(self, layer, input_size):
 
-      if layer.input_size is not None and layer.input_size != input_size:
+      if layer.input_size is not None and layer.input_size != input_size:  
          raise ValueError(f"Input size mismatch: expected {layer.input_size}, got {input_size}")
       
-      else:
-         if input_size is None:
-            raise ValueError("Input size must be specified for the first layer")
+      if input_size is None:
+         raise ValueError("Input size must be specified for the first layer")
+      
+      if hasattr(layer, '_initialize_parameters') and layer.weights is None: 
          rng = np.random.default_rng(layer.seed if layer.seed is not None else self.seed)
          layer.weights = layer._initialize_parameters(input_size, layer.n_neurons, layer.weight_init, rng)
          layer.bias = layer._initialize_parameters(1, layer.n_neurons, layer.bias_init, rng)
-         layer.input_size = input_size
+         
+      layer.input_size = input_size
    
    def _push_input(self, prev_layer, layer):
       self._add_input(layer, prev_layer.n_neurons)
@@ -195,7 +216,8 @@ class MLP(Module):
 
          if validation_data is not None:
             X_val, y_val = validation_data
-            val_loss = self.loss_fn(self(X_val), y_val).data.item()
+            with no_grad():
+               val_loss = self.loss_fn(self(X_val), y_val).data.item()
             history['val_loss'].append(val_loss)
             metrics['val_loss'] = f"{val_loss:.4f}"
    
@@ -203,13 +225,18 @@ class MLP(Module):
          
       return history
 
-   def plot_weights(self, layer_indices):
+   def plot_weights(self, layer_indices=None):
+      weight_layers = [layer for layer in self.layers if hasattr(layer, 'weights') and layer.weights is not None]
+
+      if layer_indices is None:
+         layer_indices = range(len(weight_layers))
       
       plt.figure(figsize=(10, 5))
-      for idx in layer_indices:
-         if 0 <= idx < len(self.layers) and self.layers[idx].weights is not None:
-            weights_flat = self.layers[idx].weights.data.flatten()
-            plt.hist(weights_flat, bins=50, alpha=0.5, label=f'Layer {idx+1}')
+      for idx in layer_indices:  
+         if 0 <= idx < len(weight_layers):
+            layer = weight_layers[idx]
+            weights_flat = layer.weights.data.flatten()
+            plt.hist(weights_flat, bins=50, alpha=0.5, label=f'Layer {idx+1} ({layer.__class__.__name__})')
             
       plt.title('Weight Distributions')
       plt.xlabel('Value')
@@ -217,14 +244,19 @@ class MLP(Module):
       plt.legend()
       plt.show()
 
-   def plot_gradients(self, layer_indices):
-      import matplotlib.pyplot as plt
+   def plot_gradients(self, layer_indices=None):
+      weight_layers = [layer for layer in self.layers if hasattr(layer, 'weights') and layer.weights is not None]
       
+      if layer_indices is None:
+         layer_indices = range(len(weight_layers))
+         
       plt.figure(figsize=(10, 5))
       for idx in layer_indices:
-         if 0 <= idx < len(self.layers) and self.layers[idx].weights is not None:
-            grads_flat = self.layers[idx].weights.grad.flatten()
-            plt.hist(grads_flat, bins=50, alpha=0.5, label=f'Layer {idx+1}')
+         if 0 <= idx < len(weight_layers):
+            layer = weight_layers[idx]
+            grads_flat = layer.weights.grad.flatten()
+            
+            plt.hist(grads_flat, bins=50, alpha=0.5, label=f'Weight Layer {idx+1}')
             
       plt.title('Gradient Distributions')
       plt.xlabel('Value')
@@ -233,30 +265,36 @@ class MLP(Module):
       plt.show()
 
    def save(self, filepath):
-      model_state = []
-      for layer in self.layers:
-         layer_state = {
-            'weights': layer.weights.data if layer.weights is not None else None,
-            'bias': layer.bias.data if layer.bias is not None else None
-         }
-         model_state.append(layer_state)
+      state_dict = {}
+      
+      for i, layer in enumerate(self.layers):
+         layer_name = f"layer_{i}_{layer.__class__.__name__}"
+         state_dict[layer_name] = [p.data for p in layer.parameters()]
          
       with open(filepath, 'wb') as f:
-         pickle.dump(model_state, f)
+         pickle.dump(state_dict, f)
       print(f"Model successfully saved to {filepath}")
 
    def load(self, filepath):
       with open(filepath, 'rb') as f:
-         model_state = pickle.load(f)
+         state_dict = pickle.load(f)
          
-      if len(model_state) != len(self.layers):
-         raise ValueError("The saved model has a different number of layers.")
+      if len(state_dict) != len(self.layers):
+         raise ValueError("Saved model has a different number of layers.")
          
-      for i, layer_state in enumerate(model_state):
-         if self.layers[i].weights is not None and layer_state['weights'] is not None:
-            self.layers[i].weights.data = layer_state['weights']
-         if self.layers[i].bias is not None and layer_state['bias'] is not None:
-            self.layers[i].bias.data = layer_state['bias']
+      for i, layer in enumerate(self.layers):
+         layer_name = f"layer_{i}_{layer.__class__.__name__}"
+         if layer_name not in state_dict:
+            raise KeyError(f"Expected to find '{layer_name}' in the saved file.")
+            
+         saved_params = state_dict[layer_name]
+         current_params = layer.parameters()
+         
+         if len(saved_params) != len(current_params):
+            raise ValueError(f"Parameter count mismatch in {layer_name}.")
+         
+         for current_p, saved_p in zip(current_params, saved_params):
+            current_p.data = saved_p
             
       print(f"Model successfully loaded from {filepath}")
 
@@ -266,29 +304,35 @@ class MLP(Module):
       print("=" * 67)
       
       total_params = 0
+      layer_count = 0
       
-      for idx, layer in enumerate(self.layers):
-
+      for layer in self.layers:
+         
          # Get shape 
          output_shape = f"({layer.input_size}, {layer.n_neurons})"
          
          # Get activation 
-         if hasattr(layer.activation, '__name__'):
-            activation_name = layer.activation.__name__
-         else:
-            activation_name = str(layer.activation)
+         activation_name = ''
+         if hasattr(layer, 'activation') and layer.activation is not None:
+            layer_count += 1
+            if hasattr(layer.activation, '__name__'):
+               activation_name = layer.activation.__name__
+            else:
+               activation_name = str(layer.activation)
          
          # Get parameter count
          layer_params = 0
-         if layer.weights is not None:
+         if hasattr(layer, 'weights') and layer.weights is not None:
             layer_params += layer.weights.data.numel() if hasattr(layer.weights.data, 'numel') else np.prod(layer.weights.data.shape)
-         if layer.bias is not None:
+         if hasattr(layer, 'bias') and layer.bias is not None:
             layer_params += layer.bias.data.numel() if hasattr(layer.bias.data, 'numel') else np.prod(layer.bias.data.shape)
+         if hasattr(layer, 'gamma') and layer.gamma is not None:
+            layer_params += layer.gamma.data.numel() if hasattr(layer.gamma.data, 'numel') else np.prod(layer.gamma.data.shape)
          
          total_params += layer_params
          
          # Print info
-         layer_name = f"layer_{idx+1}"
+         layer_name = layer.__class__.__name__ + f" {layer_count}"
          print(f"{layer_name:<17} {output_shape:<17} {activation_name:<17} {layer_params:<16,}")
       
       print("=" * 67)

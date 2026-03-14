@@ -210,7 +210,8 @@ class MLP(Module):
             self.optimizer.step()
          
          # Record loss
-         train_loss = self.loss_fn(self(X), y).data.item()
+         with no_grad():
+            train_loss = self.loss_fn(self(X), y).data.item()
          history['train_loss'].append(train_loss)
          metrics = {'train_loss': f"{train_loss:.4f}"}
 

@@ -141,10 +141,11 @@ class Tensor:
       return prod
    
    def __pow__(self, exponent):
-      power = Tensor(self.data ** exponent, (self,)) # C = A ** n
 
       if not GradMode.enabled:
          return Tensor(self.data ** exponent)
+      
+      power = Tensor(self.data ** exponent, (self,)) # C = A ** n
       
       def _backward():
          self.grad += unbroadcast(power.grad * exponent * self.data ** (exponent - 1), self.data.shape)   # dL/dA = dL/dC * dC/dA = dL/dC * n * A ** (n - 1)
@@ -167,11 +168,11 @@ class Tensor:
       if not GradMode.enabled:
          return Tensor(np.abs(self.data))
       
-      abs = Tensor(np.abs(self.data), (self,))
+      abs_tensor = Tensor(np.abs(self.data), (self,))
       def _backward():
-         self.grad += unbroadcast(abs.grad * np.sign(self.data), self.data.shape) # dL/dA = dL/d|A| * d|A|/dA = dL/d|A| * sign(A)
-      abs._backward = _backward
-      return abs
+         self.grad += unbroadcast(abs_tensor.grad * np.sign(self.data), self.data.shape) # dL/dA = dL/d|A| * d|A|/dA = dL/d|A| * sign(A)
+      abs_tensor._backward = _backward
+      return abs_tensor
    
    def backward(self):
       topo = []

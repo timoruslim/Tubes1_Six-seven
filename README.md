@@ -83,7 +83,7 @@ Tubes1_Six-Seven/
    pip install -r requirements.txt
    ```
 
-   Jika file `requirements.txt` belum ada, bisa instal manual.
+   Jika file `requirements.txt` belum ada, bisa install manual.
 
    ```bash
    pip install numpy scipy matplotlib tqdm ipywidgets jupyter
@@ -112,7 +112,7 @@ model = MLP([
 
 ### **Dynamic Layers**
 
-Jika ini menambah `Layer` baru, bisa dengan metode `add()` dari `MLP`.
+Jika ingin menambah `Layer` baru, bisa dengan metode `add()` dari `MLP`.
 
 ```Python
 model = MLP(input_size=10, seed=42)

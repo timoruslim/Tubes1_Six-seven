@@ -94,8 +94,8 @@ class RMSNorm(Module):
 
    def __call__(self, x):
       n = x.data.shape[-1]
-      RMS = ((x ** 2).sum(axis=-1, keepdims=True) / n + self.eps) ** 0.5  
-      x_bar = (x / RMS) * self.gamma 
+      RMS = ((x ** 2).sum(axis=-1, keepdims=True) / n + self.eps) ** 0.5 
+      x_bar = (x / RMS) * self.gamma # following: https://openreview.net/pdf?id=SygkZ3MTJE  
       return x_bar
 
 class MLP(Module):

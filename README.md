@@ -150,7 +150,7 @@ Dengan metode `compile()`, suatu `MLP` dilengkapi dengan fungsi _loss_ dan metod
    model.compile(
       optimizer={'method': 'adam', 'learning_rate': 0.05},
       loss='cce'
-   )`
+   )
    ```
 
 ### **Training and Prediction**

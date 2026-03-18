@@ -11,7 +11,7 @@
 
 ## 📘 Deskripsi
 
-Di sini, kami membuat package untuk mengimplementasikan **Multi-Layer Perceptron** (MLP) atau **Feed-Forward Neural Network** (FFNN). Package secara efisien dan modular menerapkan _forward pass_, _backpropagation_, dan optimisasi bobot yang menjadi pokok mekanisme MLP. Dengan pacakage ini, pengguna dapat membangun MLP sendiri dengan sangat mudah, seperti `Scikit`, tetapi dengan arsitektur yang sangat _customizable_, seperti `Pytorch` atau `TensorFlow`. Lalu, dilakukan analisis dan pemodelan dari dataset \textit{Global Student Placement \& Salary Dataset} menggunakan package yang sudah dibuat.
+Di sini, kami membuat package untuk mengimplementasikan **Multi-Layer Perceptron** (MLP) atau **Feed-Forward Neural Network** (FFNN). Package secara efisien dan modular menerapkan _forward pass_, _backpropagation_, dan optimisasi bobot yang menjadi pokok mekanisme MLP. Dengan pacakage ini, pengguna dapat membangun MLP sendiri dengan sangat mudah, seperti `Scikit`, tetapi dengan arsitektur yang sangat _customizable_, seperti `Pytorch` atau `TensorFlow`. Lalu, dilakukan analisis dan pemodelan dari dataset _Global Student Placement \& Salary Dataset_ menggunakan package yang sudah dibuat.
 
 ---
 
@@ -49,7 +49,9 @@ Tubes1_Six-Seven/
 │   │   ├── loss.py
 │   │   ├── nn.py
 │   │   └── optimizer.py
-│   └── pengujian.ipynb
+│   └── pengujian/
+│       ├── pengujian.ipynb
+│       └── test.ipynb
 └── README.md
 
 ```
@@ -58,7 +60,7 @@ Tubes1_Six-Seven/
 
 ## ⚙️ Requirement & Instalasi
 
-### Prasyarat
+### Prasyarat Package
 
 - python ≥ 3.13
 - numpy ≥ 2.2
@@ -68,7 +70,7 @@ Tubes1_Six-Seven/
 - ipywidgets ≥ 8.1.8
 - ipykernel (untuk notebook)
 
-### Instalasi
+### Instalasi Package
 
 1. Clone repository.
 
@@ -86,8 +88,17 @@ Tubes1_Six-Seven/
    Jika file `requirements.txt` belum ada, bisa install manual.
 
    ```bash
-   pip install numpy scipy matplotlib tqdm ipywidgets jupyter
+   pip install numpy scipy matplotlib tqdm ipywidgets ipykernel
    ```
+
+### Pengujian
+
+Jika ingin menggunakan file `ipynb` pada folder `\pengujian`, diperlukan juga berikut.
+
+- scikit-learn ≥ 1.8.0
+- pandas ≥ 3.0.1
+
+Instalasinya sudah termasuk dalam file `ipynb`.
 
 ---
 
@@ -125,7 +136,7 @@ model.add(Layer(3, activation='softmax', weight_init='xavier'))
 
 ### **Compilation**
 
-Dengan metode `compile()`, suatu `MLP` bisa dilengkapi dengan fungsi _loss_ dan metode optimisasi yang diinginkan.
+Dengan metode `compile()`, suatu `MLP` dilengkapi dengan fungsi _loss_ dan metode optimisasi yang diinginkan.
 
 - String:
 
@@ -159,10 +170,12 @@ history = model.fit(
 plt.plot(history['train_loss'], label='Train Loss')
 plt.plot(history['val_loss'], label='Validation Loss')
 
-model(X_predict)
+model(X_pred)
 ```
 
 ### **Save and Load**
+
+Simpan semua bobot suatu MLP ke file `.pkl` dengan `save()`. Lalu, jika arsitektur model sesuai, bobot dari suatu `.pkl` bisa dimuat dengan `load()`.
 
 ```Python
 model.save('../saved_model.pkl')

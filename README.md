@@ -104,7 +104,7 @@ Instalasinya sudah termasuk dalam file `ipynb`.
 
 ## 🚀 Menggunakan Package
 
-Contoh penggunaan package (yang sederhana) dapat dilihat di `\src\test.ipynb`. Untuk penggunaan langsung pada dataset, bisa lihat `\src\pengujian.ipynb`. Selain itu, berikut "tutorial" atau "dokumentasi" singkat.
+Contoh penggunaan package (yang sederhana) dapat dilihat di `\pengujian\test.ipynb`. Untuk penggunaan langsung pada dataset, bisa lihat `\pengujian\pengujian.ipynb`. Selain itu, berikut "tutorial" atau "dokumentasi" singkat.
 
 ### **Consructor**
 
